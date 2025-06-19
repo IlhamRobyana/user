@@ -60,6 +60,10 @@ func (s *UserServiceImpl) LoginUser(ctx context.Context, userRequest dto.UserLog
 	defer func() {
 		if err != nil || !isPasswordMatch {
 			s.SetLoginAttempt(ctx, userRequest.Email, attempt+1, s.cfg.Internal.LoginAttemptTTL)
+			if attempt+1 >= s.cfg.Internal.MaxLoginAttempt {
+				err = failure.Forbidden("Max login attempts exceeded, please wait for 2 minutes for re-login")
+				return
+			}
 		}
 	}()
 	user, err := s.UserRepository.ResolveUserByEmail(ctx, userRequest.Email)
