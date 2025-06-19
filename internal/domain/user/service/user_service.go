@@ -9,6 +9,7 @@ import (
 	"context"
 	"net/http"
 
+	"github.com/IlhamRobyana/user/internal/domain/user/model"
 	"github.com/IlhamRobyana/user/internal/domain/user/model/dto"
 	"github.com/IlhamRobyana/user/shared/failure"
 )
@@ -53,8 +54,10 @@ func (s *UserServiceImpl) LoginUser(ctx context.Context, userRequest dto.UserLog
 		log.Error().Err(err).Msg("[LoginUser] failed login user")
 		return false, err
 	}
+
 	var (
 		isPasswordMatch bool
+		user            model.User
 	)
 	// increase redis increment if failed to log in
 	defer func() {
@@ -62,11 +65,28 @@ func (s *UserServiceImpl) LoginUser(ctx context.Context, userRequest dto.UserLog
 			s.SetLoginAttempt(ctx, userRequest.Email, attempt+1, s.cfg.Internal.LoginAttemptTTL)
 			if attempt+1 >= s.cfg.Internal.MaxLoginAttempt {
 				err = failure.Forbidden("Max login attempts exceeded, please wait for 2 minutes for re-login")
+				suspendAmount, err := s.GetSuspendAmount(ctx, userRequest.Email)
+				if err != nil {
+					if err.Error() != redis.Nil.Error() {
+						log.Error().Err(err).Msg("[LoginUser] failed get suspend amount")
+						return
+					}
+					s.SetSuspendAmount(ctx, userRequest.Email, 0, s.cfg.Internal.SuspendAmountTTL)
+				}
+				s.SetSuspendAmount(ctx, userRequest.Email, suspendAmount+1, s.cfg.Internal.SuspendAmountTTL)
+				if suspendAmount+1 >= s.cfg.Internal.MaxSuspendAmount {
+					err = s.UserRepository.UpdateUserStatus(ctx, user.Id, model.Inactive)
+					if err != nil {
+						log.Error().Err(err).Msg("[LoginUser] failed update user status")
+						return
+					}
+					return
+				}
 				return
 			}
 		}
 	}()
-	user, err := s.UserRepository.ResolveUserByEmail(ctx, userRequest.Email)
+	user, err = s.UserRepository.ResolveUserByEmail(ctx, userRequest.Email)
 	if err != nil {
 		if failure.GetCode(err) != http.StatusNotFound {
 			log.Error().Err(err).Msg("[LoginUser] failed login user")

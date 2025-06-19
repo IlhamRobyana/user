@@ -58,8 +58,10 @@ type Config struct {
 	}
 
 	Internal struct {
-		MaxLoginAttempt int           `mapstructure:"MAX_LOGIN_ATTEMPT"`
-		LoginAttemptTTL time.Duration `mapstructure:"LOGIN_ATTEMPT_TTL"`
+		MaxLoginAttempt  int           `mapstructure:"MAX_LOGIN_ATTEMPT"`
+		LoginAttemptTTL  time.Duration `mapstructure:"LOGIN_ATTEMPT_TTL"`
+		MaxSuspendAmount int           `mapstructure:"MAX_SUSPEND_AMOUNT"`
+		SuspendAmountTTL time.Duration `mapstructure:"SUSPEND_AMOUNT_TTL"`
 	}
 
 	Server struct {

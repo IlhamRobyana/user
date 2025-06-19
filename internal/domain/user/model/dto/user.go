@@ -19,6 +19,7 @@ type userDTOFieldName struct {
 	Email     UserDTOFieldNameType
 	Password  UserDTOFieldNameType
 	Fullname  UserDTOFieldNameType
+	Status    UserDTOFieldNameType
 	CreatedAt UserDTOFieldNameType
 	UpdatedAt UserDTOFieldNameType
 	DeletedAt UserDTOFieldNameType
@@ -32,6 +33,7 @@ var UserDTOFieldName = userDTOFieldName{
 	Email:     "email",
 	Password:  "password",
 	Fullname:  "fullname",
+	Status:    "status",
 	CreatedAt: "createdAt",
 	UpdatedAt: "updatedAt",
 	DeletedAt: "deletedAt",
@@ -65,6 +67,7 @@ func (d UserCreateRequest) ToModel() (model.User, error) {
 		Email:     d.Email,
 		Password:  password,
 		Fullname:  d.Fullname,
+		Status:    model.Active,
 		CreatedBy: id.String(),
 		UpdatedBy: id.String(),
 	}, nil
@@ -74,6 +77,7 @@ type UserResponse struct {
 	Id        uuid.UUID   `json:"id" swaggertype:"string" validate:"required" example:"cb6b3eeb-2fa0-4492-91eb-67a7101a5424"`
 	Email     string      `json:"email" validate:"required"`
 	Fullname  string      `json:"fullname" validate:"required"`
+	Status    string      `json:"status" validate:"required"`
 	CreatedAt time.Time   `json:"createdAt" swaggertype:"string" validate:"required" example:"2006-01-02T15:04:05+07:00"`
 	UpdatedAt time.Time   `swaggertype:"string" validate:"required" example:"2006-01-02T15:04:05+07:00" json:"updatedAt"`
 	DeletedAt null.Time   `swaggertype:"string" example:"2006-01-02T15:04:05+07:00" json:"deletedAt"`
@@ -87,6 +91,7 @@ func NewUserResponse(user model.User) UserResponse {
 		Id:        user.Id,
 		Email:     user.Email,
 		Fullname:  user.Fullname,
+		Status:    user.Status,
 		CreatedAt: user.CreatedAt,
 		UpdatedAt: user.UpdatedAt,
 		DeletedAt: user.DeletedAt,

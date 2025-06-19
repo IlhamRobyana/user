@@ -93,6 +93,16 @@ func (repo *UserRepositoryMySQL) IsExistUserByID(ctx context.Context, primaryID 
 	return
 }
 
+func (repo *UserRepositoryMySQL) UpdateUserStatus(ctx context.Context, primaryID uuid.UUID, status string) (err error) {
+	query := fmt.Sprintf(userQueries.updateUser, "`status` = ? WHERE `id` = ?")
+	_, err = repo.exec(ctx, query, []interface{}{status, primaryID})
+	if err != nil {
+		log.Error().Err(err).Msg("[UpdateUserStatus] failed update user status")
+		err = failure.InternalError(err)
+	}
+	return
+}
+
 type UserFieldParameter struct {
 	param string
 	args  []interface{}
@@ -146,6 +156,10 @@ func (ss UserSelectFields) Fullname() UserField {
 	return UserField("fullname")
 }
 
+func (ss UserSelectFields) Status() UserField {
+	return UserField("status")
+}
+
 func (ss UserSelectFields) CreatedAt() UserField {
 	return UserField("created_at")
 }
@@ -176,6 +190,7 @@ func (ss UserSelectFields) All() UserFieldList {
 		ss.Email(),
 		ss.Password(),
 		ss.Fullname(),
+		ss.Status(),
 		ss.CreatedAt(),
 		ss.UpdatedAt(),
 		ss.DeletedAt(),
@@ -191,6 +206,7 @@ func (ss UserSelectFields) ForCreate() UserFieldList {
 		ss.Email(),
 		ss.Password(),
 		ss.Fullname(),
+		ss.Status(),
 		ss.CreatedBy(),
 		ss.UpdatedBy(),
 	}
@@ -274,6 +290,8 @@ func composeInsertFieldsAndParamsUser(userList []model.User, fieldsInsert ...Use
 				args = append(args, user.Password)
 			case selectField.Fullname():
 				args = append(args, user.Fullname)
+			case selectField.Status():
+				args = append(args, user.Status)
 			case selectField.CreatedAt():
 				args = append(args, user.CreatedAt)
 			case selectField.UpdatedAt():
@@ -330,4 +348,5 @@ type UserRepository interface {
 	CreateUser(ctx context.Context, user *model.User, fieldsInsert ...UserField) error
 	IsExistUserByID(ctx context.Context, userID uuid.UUID) (bool, error)
 	ResolveUserByEmail(ctx context.Context, email string, selectFields ...UserField) (model.User, error)
+	UpdateUserStatus(ctx context.Context, primaryID uuid.UUID, status string) (err error)
 }

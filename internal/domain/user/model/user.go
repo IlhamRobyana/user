@@ -9,6 +9,11 @@ import (
 	"time"
 )
 
+const (
+	Active   = "active"
+	Inactive = "inactive"
+)
+
 type UserDBFieldNameType string
 
 type userDBFieldName struct {
@@ -16,6 +21,7 @@ type userDBFieldName struct {
 	Email     UserDBFieldNameType
 	Password  UserDBFieldNameType
 	Fullname  UserDBFieldNameType
+	Status    UserDBFieldNameType
 	CreatedAt UserDBFieldNameType
 	UpdatedAt UserDBFieldNameType
 	DeletedAt UserDBFieldNameType
@@ -29,6 +35,7 @@ var UserDBFieldName = userDBFieldName{
 	Email:     "email",
 	Password:  "password",
 	Fullname:  "fullname",
+	Status:    "status",
 	CreatedAt: "created_at",
 	UpdatedAt: "updated_at",
 	DeletedAt: "deleted_at",
@@ -42,6 +49,7 @@ type User struct {
 	Email     string      `db:"email"`
 	Password  string      `db:"password"`
 	Fullname  string      `db:"fullname"`
+	Status    string      `db:"status"`
 	CreatedAt time.Time   `db:"created_at"`
 	UpdatedAt time.Time   `db:"updated_at"`
 	DeletedAt null.Time   `db:"deleted_at"`
